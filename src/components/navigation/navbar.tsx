@@ -3,7 +3,6 @@
 import { useEffect, useState, startTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Heart,
@@ -35,17 +34,30 @@ export function Navbar() {
   const { isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    startTransition(() => setMounted(true));
+    startTransition(() => {
+      const root = document.documentElement;
+      const stored = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      const dark = stored ? stored === "dark" : prefersDark;
+
+      root.classList.toggle("dark", dark);
+      setIsDark(dark);
+      setMounted(true);
+    });
   }, []);
 
-  const isDark = mounted && resolvedTheme === "dark";
-
   const toggleDarkMode = () => {
-    setTheme(isDark ? "light" : "dark");
+    const nextDark = !isDark;
+    const root = document.documentElement;
+    root.classList.toggle("dark", nextDark);
+    localStorage.setItem("theme", nextDark ? "dark" : "light");
+    setIsDark(nextDark);
   };
 
   const linkActive = (href: string) => pathname === href;
@@ -84,7 +96,12 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" size="icon" type="button" onClick={toggleDarkMode}>
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            onClick={toggleDarkMode}
+          >
             {isDark ? (
               <Sun className="h-4 w-4" />
             ) : (
@@ -128,7 +145,12 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
-          <Button variant="ghost" size="icon" type="button" onClick={toggleDarkMode}>
+          <Button
+            variant="ghost"
+            size="icon"
+            type="button"
+            onClick={toggleDarkMode}
+          >
             {isDark ? (
               <Sun className="h-4 w-4" />
             ) : (
@@ -182,8 +204,16 @@ export function Navbar() {
               ))}
               {isAuthenticated ? (
                 <>
-                  <Button variant="outline" className="mt-2 w-full" size="sm" asChild>
-                    <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full"
+                    size="sm"
+                    asChild
+                  >
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                    >
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       Dashboard
                     </Link>
@@ -205,7 +235,12 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" className="mt-2 w-full" size="sm" asChild>
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full"
+                    size="sm"
+                    asChild
+                  >
                     <Link href="/login" onClick={() => setMobileOpen(false)}>
                       <User className="mr-2 h-4 w-4" />
                       Login
