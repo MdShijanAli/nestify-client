@@ -31,7 +31,8 @@ import { toast } from "sonner";
 
 export default function PropertyDetailPage() {
   const params = useParams();
-  const id = params.id as string;
+  const idParam = params.id;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam;
 
   const { properties, isFavorite, toggleFavorite } = useAppState();
   const property = properties.find((p) => p.id === id);
@@ -56,6 +57,20 @@ export default function PropertyDetailPage() {
       </div>
     );
   }
+
+  const safeAddress =
+    (property as { address?: string }).address ?? "Address unavailable";
+  const safeDescription =
+    (property as { description?: string }).description ??
+    "Property description is not available yet.";
+  const safeAgentName =
+    (property as { agentName?: string }).agentName ?? "Nestify Agent";
+  const safeDateListed = (property as { dateListed?: string }).dateListed;
+  const safeAmenities = Array.isArray(
+    (property as { amenities?: string[] }).amenities,
+  )
+    ? (property as { amenities: string[] }).amenities
+    : [];
 
   const formatPrice = (price: number, status: string) => {
     return status === "For Rent"
@@ -122,7 +137,7 @@ export default function PropertyDetailPage() {
                   <div className="mt-1 flex items-center gap-1 text-muted-foreground">
                     <MapPin className="h-4 w-4" />
                     <span>
-                      {property.address}, {property.city}, {property.state}{" "}
+                      {safeAddress}, {property.city}, {property.state}{" "}
                       {property.zipCode}
                     </span>
                   </div>
@@ -170,7 +185,9 @@ export default function PropertyDetailPage() {
                 {
                   icon: Calendar,
                   label: "Listed",
-                  value: new Date(property.dateListed).toLocaleDateString(),
+                  value: safeDateListed
+                    ? new Date(safeDateListed).toLocaleDateString()
+                    : "N/A",
                 },
               ].map((stat) => (
                 <div
@@ -191,18 +208,23 @@ export default function PropertyDetailPage() {
                 Description
               </h2>
               <p className="mt-3 leading-relaxed text-muted-foreground">
-                {property.description}
+                {safeDescription}
               </p>
             </div>
 
             <div className="mt-8">
               <h2 className="font-heading text-xl font-semibold">Amenities</h2>
               <div className="mt-3 flex flex-wrap gap-2">
-                {property.amenities.map((a) => (
+                {safeAmenities.map((a) => (
                   <Badge key={a} variant="outline" className="px-3 py-1.5">
                     {a}
                   </Badge>
                 ))}
+                {safeAmenities.length === 0 ? (
+                  <span className="text-sm text-muted-foreground">
+                    No amenities listed
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -219,10 +241,7 @@ export default function PropertyDetailPage() {
             )}
 
             {/* Location Map */}
-            <PropertyLocationMap
-              city={property.city}
-              address={property.address}
-            />
+            <PropertyLocationMap city={property.city} address={safeAddress} />
 
             <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
               <Tag className="h-4 w-4" />
@@ -238,7 +257,7 @@ export default function PropertyDetailPage() {
                   <User className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="font-semibold">{property.agentName}</div>
+                  <div className="font-semibold">{safeAgentName}</div>
                   <div className="text-sm text-muted-foreground">
                     Licensed Agent
                   </div>
