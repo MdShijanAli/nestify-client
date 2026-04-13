@@ -69,7 +69,7 @@ export default function PropertyDetailPage() {
   const safeAmenities = Array.isArray(
     (property as { amenities?: string[] }).amenities,
   )
-    ? (property as { amenities: string[] }).amenities
+    ? ((property as { amenities?: string[] }).amenities ?? [])
     : [];
 
   const formatPrice = (price: number, status: string) => {

@@ -168,9 +168,11 @@ export function MortgageCalculator({ propertyPrice }: MortgageCalculatorProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) =>
-                  `$${Math.round(value).toLocaleString()}`
-                }
+                formatter={(value) => {
+                  const num =
+                    typeof value === "number" ? value : Number(value ?? 0);
+                  return `$${Math.round(num).toLocaleString()}`;
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
