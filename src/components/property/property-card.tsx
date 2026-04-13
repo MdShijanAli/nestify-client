@@ -21,8 +21,13 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const { isFavorite, toggleFavorite, isInCompare, toggleCompare, compareList } =
-    useAppState();
+  const {
+    isFavorite,
+    toggleFavorite,
+    isInCompare,
+    toggleCompare,
+    compareList,
+  } = useAppState();
   const liked = isFavorite(property.id);
   const comparing = isInCompare(property.id);
 
@@ -37,7 +42,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
   };
 
   return (
-    <Link href={`/property/${property.id}`} className="group block">
+    <Link href={`/properties/${property.id}`} className="group block">
       <div className="overflow-hidden rounded-xl border bg-card shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
@@ -101,7 +106,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
                 }
                 toggleCompare(property.id);
                 toast.success(
-                  comparing ? "Removed from comparison" : "Added to comparison"
+                  comparing ? "Removed from comparison" : "Added to comparison",
                 );
               }}
             >

@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
   SlidersHorizontal,
   Grid3X3,
@@ -69,7 +68,7 @@ export default function PropertiesPage() {
         return [...result].sort(
           (a, b) =>
             new Date(b.dateListed || "").getTime() -
-            new Date(a.dateListed || "").getTime()
+            new Date(a.dateListed || "").getTime(),
         );
       case "beds":
         return [...result].sort((a, b) => b.bedrooms - a.bedrooms);
@@ -77,7 +76,7 @@ export default function PropertiesPage() {
         return [...result].sort((a, b) => b.area - a.area);
       case "featured":
         return [...result].sort(
-          (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+          (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),
         );
       default:
         return result;
@@ -93,7 +92,7 @@ export default function PropertiesPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginatedProperties = filtered.slice(
     (page - 1) * perPage,
-    page * perPage
+    page * perPage,
   );
 
   useEffect(() => {
@@ -110,8 +109,8 @@ export default function PropertiesPage() {
         <div className="container mx-auto px-4 py-8">
           <h1 className="font-heading text-3xl font-bold">Properties</h1>
           <p className="mt-1 text-muted-foreground">
-            {filtered.length} {filtered.length === 1 ? "property" : "properties"}{" "}
-            found
+            {filtered.length}{" "}
+            {filtered.length === 1 ? "property" : "properties"} found
           </p>
           <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-end">
             <div className="flex-1">
@@ -120,7 +119,9 @@ export default function PropertiesPage() {
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? "bg-primary text-primary-foreground" : ""}
+              className={
+                showFilters ? "bg-primary text-primary-foreground" : ""
+              }
             >
               <SlidersHorizontal className="mr-2 h-4 w-4" />
               Filters
@@ -257,8 +258,8 @@ export default function PropertiesPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Price: ${priceRange[0].toLocaleString()} —{" "}
-                  ${priceRange[1].toLocaleString()}
+                  Price: ${priceRange[0].toLocaleString()} — $
+                  {priceRange[1].toLocaleString()}
                 </label>
                 <Slider
                   min={0}
@@ -334,7 +335,8 @@ export default function PropertiesPage() {
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(
-                    (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1
+                    (p) =>
+                      p === 1 || p === totalPages || Math.abs(p - page) <= 1,
                   )
                   .reduce<(number | "ellipsis")[]>((acc, p, i, arr) => {
                     if (i > 0 && p - (arr[i - 1] as number) > 1)
@@ -362,7 +364,7 @@ export default function PropertiesPage() {
                       >
                         {item}
                       </Button>
-                    )
+                    ),
                   )}
 
                 <Button
@@ -379,7 +381,8 @@ export default function PropertiesPage() {
 
                 <span className="ml-3 text-sm text-muted-foreground">
                   {(page - 1) * perPage + 1}–
-                  {Math.min(page * perPage, filtered.length)} of {filtered.length}
+                  {Math.min(page * perPage, filtered.length)} of{" "}
+                  {filtered.length}
                 </span>
               </div>
             )}
