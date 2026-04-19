@@ -1,27 +1,53 @@
 export type PropertyStatus = "For Sale" | "For Rent" | "Sold";
 
-export interface Property {
-  id: string;
-  title: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  price: number;
-  status: PropertyStatus;
-  type: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: number;
-  featured: boolean;
-  images: string[];
-}
-
 export const propertyTypes = [
   "Apartment",
   "House",
   "Commercial",
   "Land",
 ] as const;
+
+export type PropertyType = (typeof propertyTypes)[number];
+
+export const statusOptions: PropertyStatus[] = ["For Sale", "For Rent", "Sold"];
+
+export const amenitiesList = [
+  "Parking",
+  "Pool",
+  "Gym",
+  "Balcony",
+  "Garden",
+  "Security",
+  "Elevator",
+  "Air Conditioning",
+  "Pet Friendly",
+  "Furnished",
+  "Laundry",
+  "WiFi",
+] as const;
+
+export interface Property {
+  id: string;
+  title: string;
+  description?: string;
+  address?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  price: number;
+  status: PropertyStatus;
+  type: PropertyType;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  featured: boolean;
+  images: string[];
+  amenities?: string[];
+  dateListed?: string;
+  agentId?: string;
+  agentName?: string;
+  agentPhoto?: string;
+}
 
 const img = (id: string) =>
   `https://images.unsplash.com/photo-${id}?w=800&q=80`;
