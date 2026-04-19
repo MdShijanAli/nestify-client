@@ -44,14 +44,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen">
       <aside
         className={cn(
-          "sticky top-0 flex h-screen flex-col border-r bg-sidebar text-sidebar-foreground transition-all duration-300",
+          "sticky top-0 flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300",
           collapsed ? "w-16" : "w-64",
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
           {!collapsed ? (
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+              <div className="flex h-8 w-8 items-center justify-center bg-sidebar rounded-lg bg-sidebar-primary">
                 <Home className="h-4 w-4 text-sidebar-primary-foreground" />
               </div>
               <span className="font-heading text-sm font-bold text-sidebar-foreground">
@@ -76,7 +76,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {!collapsed && user ? (
           <div className="border-b border-sidebar-border px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent">
+              <div className="flex h-9 w-9 items-center justify-center bg-sidebar rounded-full bg-sidebar-accent">
                 <User className="h-4 w-4 text-sidebar-foreground" />
               </div>
               <div className="min-w-0">
