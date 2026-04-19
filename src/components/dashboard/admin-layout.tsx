@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Home,
   User,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ const menuItems = [
   { href: "/dashboard/users", icon: Users, label: "Users" },
   { href: "/dashboard/agents", icon: UserCheck, label: "Agents" },
   { href: "/dashboard/leads", icon: MessageSquare, label: "Leads" },
+  { href: "/dashboard/bookings", icon: Receipt, label: "Bookings" },
   { href: "/dashboard/content", icon: FileText, label: "Content" },
   { href: "/dashboard/reports", icon: BarChart3, label: "Reports" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
