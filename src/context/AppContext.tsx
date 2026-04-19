@@ -1,14 +1,11 @@
-"use client";
-
 import {
   createContext,
   useContext,
   useState,
   ReactNode,
   useCallback,
-  useEffect,
 } from "react";
-import { Property } from "@/data/properties";
+import { Property, PropertyType, PropertyStatus } from "@/data/properties";
 import { properties as initialProperties } from "@/data/properties";
 
 export interface Lead {
@@ -22,6 +19,39 @@ export interface Lead {
   date: string;
   agent: string;
   message?: string;
+}
+
+export interface Booking {
+  id: string;
+  txnId: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyAddress: string;
+  customerName: string;
+  customerEmail: string;
+  amount: number;
+  method: string;
+  status: "Confirmed" | "Cancelled";
+  date: string;
+  visitDate?: string;
+  visitTime?: string; // "HH:mm"
+}
+
+export interface AppNotification {
+  id: string;
+  recipient: string; // agent name (or "all")
+  type:
+    | "visit_scheduled"
+    | "visit_rescheduled"
+    | "visit_cancelled"
+    | "lead"
+    | "system";
+  title: string;
+  message: string;
+  bookingId?: string;
+  propertyId?: string;
+  createdAt: string;
+  read: boolean;
 }
 
 export interface AppUser {
@@ -38,6 +68,17 @@ interface AppState {
   properties: Property[];
   leads: Lead[];
   users: AppUser[];
+  bookings: Booking[];
+  addBooking: (b: Omit<Booking, "id" | "date" | "status">) => Booking;
+  cancelBooking: (id: string) => void;
+  rescheduleVisit: (id: string, newDate: string, newTime?: string) => void;
+  notifications: AppNotification[];
+  addNotification: (
+    n: Omit<AppNotification, "id" | "createdAt" | "read">,
+  ) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: (recipient?: string) => void;
+  deleteNotification: (id: string) => void;
   favorites: string[];
   compareList: string[];
   toggleFavorite: (id: string) => void;
@@ -45,7 +86,7 @@ interface AppState {
   toggleCompare: (id: string) => void;
   isInCompare: (id: string) => boolean;
   clearCompare: () => void;
-  addProperty: (p: Omit<Property, "id">) => void;
+  addProperty: (p: Omit<Property, "id" | "dateListed">) => void;
   updateProperty: (id: string, p: Partial<Property>) => void;
   deleteProperty: (id: string) => void;
   toggleFeatured: (id: string) => void;
@@ -173,41 +214,179 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [users, setUsers] = useState<AppUser[]>(initialUsers);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [compareList, setCompareList] = useState<string[]>([]);
-  const [storageReady, setStorageReady] = useState(false);
-
-  useEffect(() => {
+  const [bookings, setBookings] = useState<Booking[]>(() => {
     try {
-      const storedFavorites = localStorage.getItem("estatehub_favorites");
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites) as string[]);
-      }
-
-      const storedCompare = localStorage.getItem("estatehub_compare");
-      if (storedCompare) {
-        setCompareList(JSON.parse(storedCompare) as string[]);
-      }
+      return JSON.parse(localStorage.getItem("estatehub_bookings") || "[]");
     } catch {
-      /* ignore corrupt storage */
-    } finally {
-      setStorageReady(true);
+      return [];
     }
+  });
+  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("estatehub_notifications") || "[]",
+      );
+    } catch {
+      return [];
+    }
+  });
+
+  const persistBookings = (next: Booking[]) => {
+    localStorage.setItem("estatehub_bookings", JSON.stringify(next));
+    return next;
+  };
+  const persistNotifications = (next: AppNotification[]) => {
+    localStorage.setItem("estatehub_notifications", JSON.stringify(next));
+    return next;
+  };
+
+  const addNotification = useCallback(
+    (n: Omit<AppNotification, "id" | "createdAt" | "read">) => {
+      const note: AppNotification = {
+        ...n,
+        id: `NTF-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
+      setNotifications((prev) => persistNotifications([note, ...prev]));
+    },
+    [],
+  );
+
+  const markNotificationRead = useCallback((id: string) => {
+    setNotifications((prev) =>
+      persistNotifications(
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      ),
+    );
   }, []);
 
-  useEffect(() => {
-    if (!storageReady) return;
-    localStorage.setItem("estatehub_favorites", JSON.stringify(favorites));
-  }, [favorites, storageReady]);
+  const markAllNotificationsRead = useCallback((recipient?: string) => {
+    setNotifications((prev) =>
+      persistNotifications(
+        prev.map((n) =>
+          !recipient || n.recipient === recipient || n.recipient === "all"
+            ? { ...n, read: true }
+            : n,
+        ),
+      ),
+    );
+  }, []);
 
-  useEffect(() => {
-    if (!storageReady) return;
-    localStorage.setItem("estatehub_compare", JSON.stringify(compareList));
-  }, [compareList, storageReady]);
+  const deleteNotification = useCallback((id: string) => {
+    setNotifications((prev) =>
+      persistNotifications(prev.filter((n) => n.id !== id)),
+    );
+  }, []);
+
+  const findAgentForProperty = (propertyId: string) =>
+    properties.find((p) => p.id === propertyId)?.agentName;
+
+  const addBooking = (b: Omit<Booking, "id" | "date" | "status">): Booking => {
+    const newBooking: Booking = {
+      ...b,
+      id: `BK-${Date.now()}`,
+      date: new Date().toISOString(),
+      status: "Confirmed",
+    };
+    setBookings((prev) => persistBookings([newBooking, ...prev]));
+    const agent = findAgentForProperty(b.propertyId);
+    if (agent && b.visitDate) {
+      const when = new Date(b.visitDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      addNotification({
+        recipient: agent,
+        type: "visit_scheduled",
+        title: "New Visit Scheduled",
+        message: `${b.customerName} scheduled a visit to ${b.propertyTitle} on ${when}${b.visitTime ? ` at ${b.visitTime}` : ""}.`,
+        bookingId: newBooking.id,
+        propertyId: b.propertyId,
+      });
+    }
+    return newBooking;
+  };
+
+  const cancelBooking = (id: string) => {
+    let cancelled: Booking | undefined;
+    setBookings((prev) => {
+      const next = prev.map((b) => {
+        if (b.id === id) {
+          cancelled = { ...b, status: "Cancelled" as const };
+          return cancelled;
+        }
+        return b;
+      });
+      return persistBookings(next);
+    });
+    if (cancelled) {
+      const agent = findAgentForProperty(cancelled.propertyId);
+      if (agent) {
+        addNotification({
+          recipient: agent,
+          type: "visit_cancelled",
+          title: "Visit Cancelled",
+          message: `${cancelled.customerName} cancelled their visit to ${cancelled.propertyTitle}.`,
+          bookingId: cancelled.id,
+          propertyId: cancelled.propertyId,
+        });
+      }
+    }
+  };
+
+  const rescheduleVisit = (id: string, newDate: string, newTime?: string) => {
+    let updated: Booking | undefined;
+    setBookings((prev) => {
+      const next = prev.map((b) => {
+        if (b.id === id) {
+          updated = {
+            ...b,
+            visitDate: newDate,
+            ...(newTime !== undefined ? { visitTime: newTime } : {}),
+          };
+          return updated;
+        }
+        return b;
+      });
+      return persistBookings(next);
+    });
+    if (updated) {
+      const agent = findAgentForProperty(updated.propertyId);
+      if (agent) {
+        const when = new Date(newDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        addNotification({
+          recipient: agent,
+          type: "visit_rescheduled",
+          title: "Visit Rescheduled",
+          message: `${updated.customerName} rescheduled their visit to ${updated.propertyTitle} → ${when}${updated.visitTime ? ` at ${updated.visitTime}` : ""}.`,
+          bookingId: updated.id,
+          propertyId: updated.propertyId,
+        });
+      }
+    }
+  };
+
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("estatehub_favorites") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
   const toggleFavorite = useCallback((id: string) => {
     setFavorites((prev) => {
-      return prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      const next = prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id];
+      localStorage.setItem("estatehub_favorites", JSON.stringify(next));
+      return next;
     });
   }, []);
 
@@ -215,6 +394,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (id: string) => favorites.includes(id),
     [favorites],
   );
+
+  const [compareList, setCompareList] = useState<string[]>([]);
 
   const toggleCompare = useCallback((id: string) => {
     setCompareList((prev) => {
@@ -230,10 +411,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
   const clearCompare = useCallback(() => setCompareList([]), []);
 
-  const addProperty = (p: Omit<Property, "id">) => {
+  const addProperty = (p: Omit<Property, "id" | "dateListed">) => {
     const newProp: Property = {
       ...p,
       id: `PROP-${String(nextPropId++).padStart(3, "0")}`,
+      dateListed: new Date().toISOString().split("T")[0],
     };
     setProperties((prev) => [newProp, ...prev]);
   };
@@ -287,6 +469,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         properties,
         leads,
         users,
+        bookings,
+        addBooking,
+        cancelBooking,
+        rescheduleVisit,
+        notifications,
+        addNotification,
+        markNotificationRead,
+        markAllNotificationsRead,
+        deleteNotification,
         favorites,
         compareList,
         toggleFavorite,

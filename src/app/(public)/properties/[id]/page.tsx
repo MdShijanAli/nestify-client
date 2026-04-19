@@ -15,6 +15,7 @@ import {
   User,
   Mail,
   Phone,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ import { VirtualTour } from "@/components/virtual-tour";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PaymentModal } from "@/components/payment-modal";
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -42,6 +44,7 @@ export default function PropertyDetailPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [payOpen, setPayOpen] = useState(false);
 
   if (!property) {
     return (
@@ -315,6 +318,15 @@ export default function PropertyDetailPage() {
             </div>
 
             <Button
+              className="w-full gradient-accent text-accent-foreground border-0"
+              size="lg"
+              onClick={() => setPayOpen(true)}
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              Book Now — Pay $100
+            </Button>
+
+            <Button
               variant="outline"
               className="w-full"
               size="lg"
@@ -326,6 +338,17 @@ export default function PropertyDetailPage() {
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        propertyTitle={property.title}
+        propertyId={property.id}
+        propertyAddress={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
+        amount={100}
+        customerName={name}
+        customerEmail={email}
+      />
     </div>
   );
 }
