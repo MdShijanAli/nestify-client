@@ -13,6 +13,8 @@ import {
   ChevronRight,
   Home,
   User,
+  Receipt,
+  CalendarCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,8 @@ const menuItems = [
   { href: "/dashboard/saved", icon: Heart, label: "Saved Properties" },
   { href: "/dashboard/searches", icon: Search, label: "My Searches" },
   { href: "/dashboard/inquiries", icon: MessageSquare, label: "My Inquiries" },
+  { href: "/dashboard/bookings", icon: Receipt, label: "My Bookings" },
+  { href: "/dashboard/visits", icon: CalendarCheck, label: "Upcoming Visits" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
