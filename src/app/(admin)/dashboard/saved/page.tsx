@@ -3,48 +3,32 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { useAppState } from "@/context/AppContext";
-import { DashboardPageShell } from "@/components/dashboard/page-shell";
+import { PropertyCard } from "@/components/property/property-card";
 import { Button } from "@/components/ui/button";
 
-export default function DashboardSavedPage() {
-  const { favorites, properties } = useAppState();
-  const savedProperties = properties.filter((p) => favorites.includes(p.id));
+export default function CustomerSavedPage() {
+	const { properties, favorites } = useAppState();
+	const saved = properties.filter((property) => favorites.includes(property.id));
 
-  return (
-    <DashboardPageShell
-      title="Saved Properties"
-      subtitle="Your bookmarked listings"
-    >
-      {savedProperties.length === 0 ? (
-        <div className="rounded-xl border bg-card p-8 text-center">
-          <Heart className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            No saved properties yet
-          </p>
-          <Button asChild variant="outline" className="mt-4">
-            <Link href="/properties">Browse Properties</Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {savedProperties.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between rounded-xl border bg-card p-4"
-            >
-              <div>
-                <p className="font-medium text-foreground">{p.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  {p.city}, {p.state}
-                </p>
-              </div>
-              <p className="font-semibold text-foreground">
-                ${p.price.toLocaleString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-    </DashboardPageShell>
-  );
+	return (
+		<div className="space-y-6 p-6">
+			<h1 className="font-heading text-2xl font-bold text-foreground">Saved Properties</h1>
+
+			{saved.length === 0 ? (
+				<div className="py-16 text-center">
+					<Heart className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+					<p className="mb-4 text-muted-foreground">You haven&apos;t saved any properties yet</p>
+					<Link href="/properties">
+						<Button>Browse Properties</Button>
+					</Link>
+				</div>
+			) : (
+				<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{saved.map((property) => (
+						<PropertyCard key={property.id} property={property} />
+					))}
+				</div>
+			)}
+		</div>
+	);
 }
