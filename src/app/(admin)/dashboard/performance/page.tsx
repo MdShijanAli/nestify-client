@@ -1,47 +1,59 @@
-import {
-  DashboardPageShell,
-  DashboardStatCard,
-} from "@/components/dashboard/page-shell";
-import { Eye, TrendingUp, HousePlus, MessageSquare } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
-export default function DashboardPerformancePage() {
-  const stats = [
-    {
-      label: "Listing Views",
-      value: "12,840",
-      icon: Eye,
-      color: "text-primary",
-    },
-    {
-      label: "Conversion Rate",
-      value: "12.5%",
-      icon: TrendingUp,
-      color: "text-success",
-    },
-    {
-      label: "New Listings",
-      value: 18,
-      icon: HousePlus,
-      color: "text-secondary",
-    },
-    {
-      label: "Lead Responses",
-      value: 92,
-      icon: MessageSquare,
-      color: "text-accent",
-    },
-  ];
+const metrics = [
+  { label: "Listings Sold", current: 8, target: 15 },
+  { label: "Leads Converted", current: 12, target: 20 },
+  { label: "Revenue Target", current: 650000, target: 1000000 },
+  { label: "Client Satisfaction", current: 92, target: 100 },
+];
 
+export default function AgentPerformancePage() {
   return (
-    <DashboardPageShell
-      title="Performance"
-      subtitle="Track growth and conversion metrics"
-    >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s) => (
-          <DashboardStatCard key={s.label} {...s} />
-        ))}
+    <div className="space-y-6 p-6">
+      <div>
+        <h1 className="font-heading text-2xl font-bold text-foreground">
+          Performance
+        </h1>
+        <p className="text-muted-foreground">
+          Track progress toward your monthly goals.
+        </p>
       </div>
-    </DashboardPageShell>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {metrics.map((metric) => {
+          const pct = Math.round((metric.current / metric.target) * 100);
+
+          return (
+            <Card key={metric.label}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {metric.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold text-foreground">
+                    {metric.target > 1000
+                      ? `$${metric.current.toLocaleString()}`
+                      : metric.current}
+                  </span>
+                  <span className="text-muted-foreground">
+                    /{" "}
+                    {metric.target > 1000
+                      ? `$${metric.target.toLocaleString()}`
+                      : metric.target}
+                  </span>
+                </div>
+                <Progress value={pct} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  {pct}% of target
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 }
