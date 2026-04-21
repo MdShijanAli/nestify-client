@@ -1,30 +1,56 @@
-import { DashboardPageShell } from "@/components/dashboard/page-shell";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const inquiries = [
-  { id: "1", property: "Modern Loft in Downtown", status: "New" },
-  { id: "2", property: "Waterfront Condo", status: "Contacted" },
-  { id: "3", property: "Suburban Family Home", status: "Qualified" },
+  {
+    id: 1,
+    property: "Modern Luxury Apartment",
+    date: "2026-04-10",
+    status: "Replied",
+    message: "Is this property still available?",
+  },
+  {
+    id: 2,
+    property: "Classic Colonial Home",
+    date: "2026-04-08",
+    status: "Pending",
+    message: "Can I schedule a viewing?",
+  },
+  {
+    id: 3,
+    property: "Skyline Penthouse Suite",
+    date: "2026-04-05",
+    status: "Replied",
+    message: "What are the HOA fees?",
+  },
 ];
 
-export default function DashboardInquiriesPage() {
+export default function CustomerInquiriesPage() {
   return (
-    <DashboardPageShell
-      title="My Inquiries"
-      subtitle="Track your sent inquiries"
-    >
-      <div className="space-y-3">
-        {inquiries.map((inquiry) => (
-          <div
-            key={inquiry.id}
-            className="flex items-center justify-between rounded-xl border bg-card p-4"
-          >
-            <p className="font-medium text-foreground">{inquiry.property}</p>
-            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-              {inquiry.status}
-            </span>
+    <div className="space-y-6 p-6">
+      <h1 className="font-heading text-2xl font-bold text-foreground">My Inquiries</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Inquiry History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {inquiries.map((inquiry) => (
+              <div key={inquiry.id} className="space-y-2 rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-foreground">{inquiry.property}</p>
+                  <Badge variant={inquiry.status === "Replied" ? "default" : "secondary"}>
+                    {inquiry.status}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{inquiry.message}</p>
+                <p className="text-xs text-muted-foreground">{inquiry.date}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </DashboardPageShell>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
